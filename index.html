@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiệm Calo Dễ Thương - Tính Lượng Calo Hàng Ngày</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #fff5f7;
+            background-image: radial-gradient(#ffccd5 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+        }
+        .cute-card {
+            border-radius: 24px;
+            background: white;
+            box-shadow: 0 8px 0px #ffccd5;
+            border: 3px solid #ffccd5;
+        }
+        .btn-cute {
+            transition: all 0.2s;
+            border-bottom: 4px solid rgba(0,0,0,0.1);
+        }
+        .btn-cute:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #fff5f7;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #ffb3c1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-700">
+
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-pink-500 mb-2">
+                <i class="fas fa-utensils mr-2"></i>Tiệm Calo Dễ Thương
+            </h1>
+            <p class="text-pink-400 font-medium">Bé ơi, hôm nay bé đã ăn gì rồi nhỉ? ✨</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Left Side: Food Selection -->
+            <div class="cute-card p-6">
+                <h2 class="text-xl font-bold text-pink-500 mb-4 flex items-center">
+                    <i class="fas fa-search mr-2"></i> Tìm món ngon
+                </h2>
+                
+                <div class="relative mb-6">
+                    <input type="text" id="foodSearch" placeholder="Nhập tên món ăn..." 
+                        class="w-full px-5 py-3 rounded-full border-2 border-pink-100 focus:border-pink-300 focus:outline-none bg-pink-50/50">
+                    <i class="fas fa-search absolute right-5 top-4 text-pink-300"></i>
+                </div>
+
+                <div id="foodList" class="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                    <!-- Food items will be injected here by JS -->
+                </div>
+            </div>
+
+            <!-- Right Side: Daily Summary -->
+            <div class="cute-card p-6 bg-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-pink-100 rounded-bl-full -mr-10 -mt-10 opacity-50"></div>
+                
+                <h2 class="text-xl font-bold text-pink-500 mb-4 flex items-center">
+                    <i class="fas fa-heart mr-2"></i> Nhật ký ăn uống
+                </h2>
+
+                <div id="selectedFoods" class="space-y-3 mb-6 min-h-[150px]">
+                    <!-- Selected items will appear here -->
+                    <div id="emptyState" class="text-center py-10 text-slate-400">
+                        <i class="fas fa-cookie-bite text-4xl mb-3 block opacity-20"></i>
+                        Chưa có món nào cả, bé mau thêm đồ ăn nhé!
+                    </div>
+                </div>
+
+                <div class="border-t-2 border-dashed border-pink-100 pt-6 mt-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-lg font-bold text-slate-600">Tổng cộng:</span>
+                        <div class="text-right">
+                            <span id="totalCalories" class="text-3xl font-black text-pink-500">0</span>
+                            <span class="text-pink-400 font-bold ml-1">kcal</span>
+                        </div>
+                    </div>
+                    
+                    <button id="clearAll" class="w-full py-3 rounded-full bg-slate-100 text-slate-500 font-bold hover:bg-slate-200 transition-colors btn-cute">
+                        Xóa tất cả 🍬
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-pink-300 text-sm">
+            <p>Made with ❤️ for a healthy life</p>
+            <p class="mt-1">© 2024 Calo Kawaii Dashboard</p>
+        </footer>
+    </div>
+
+    <script>
+        const foodDatabase = [
+            { id: 1, name: "Phở Bò", calo: 450, icon: "🍜" },
+            { id: 2, name: "Cơm Tấm", calo: 600, icon: "🍱" },
+            { id: 3, name: "Bánh Mì Thịt", calo: 350, icon: "🥖" },
+            { id: 4, name: "Bún Bò Huế", calo: 480, icon: "🍲" },
+            { id: 5, name: "Trà Sữa (Ly vừa)", calo: 450, icon: "🧋" },
+            { id: 6, name: "Cà Phê Sữa", calo: 150, icon: "☕" },
+            { id: 7, name: "Salad Rau Củ", calo: 120, icon: "🥗" },
+            { id: 8, name: "Trứng Ốp La (1 quả)", calo: 155, icon: "🍳" },
+            { id: 9, name: "Táo (1 quả)", calo: 52, icon: "🍎" },
+            { id: 10, name: "Chuối (1 quả)", calo: 89, icon: "🍌" },
+            { id: 11, name: "Gà Rán (1 miếng)", calo: 250, icon: "🍗" },
+            { id: 12, name: "Pizza (1 miếng)", calo: 285, icon: "🍕" },
+            { id: 13, name: "Cơm Trắng (1 bát)", calo: 130, icon: "🍚" },
+            { id: 14, name: "Bánh Bao", calo: 200, icon: "🥟" },
+            { id: 15, name: "Sữa Chua", calo: 100, icon: "🍦" }
+        ];
+
+        let selectedItems = [];
+
+        function renderFoodList(filter = "") {
+            const listElement = document.getElementById('foodList');
+            listElement.innerHTML = '';
+            
+            const filtered = foodDatabase.filter(food => 
+                food.name.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            filtered.forEach(food => {
+                const div = document.createElement('div');
+                div.className = "flex items-center justify-between p-4 rounded-2xl bg-pink-50/50 border border-pink-100 hover:bg-pink-100/50 transition-all cursor-pointer group";
+                div.onclick = () => addToDailyList(food);
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-3">${food.icon}</span>
+                        <div>
+                            <div class="font-bold text-slate-700">${food.name}</div>
+                            <div class="text-xs text-pink-400 font-semibold">${food.calo} kcal</div>
+                        </div>
+                    </div>
+                    <button class="w-8 h-8 rounded-full bg-white text-pink-500 shadow-sm flex items-center justify-center group-hover:bg-pink-500 group-hover:text-white transition-colors">
+                        <i class="fas fa-plus text-xs"></i>
+                    </button>
+                `;
+                listElement.appendChild(div);
+            });
+        }
+
+        function addToDailyList(food) {
+            selectedItems.push({ ...food, uniqueId: Date.now() });
+            updateUI();
+        }
+
+        function removeFromList(uniqueId) {
+            selectedItems = selectedItems.filter(item => item.uniqueId !== uniqueId);
+            updateUI();
+        }
+
+        function updateUI() {
+            const selectedContainer = document.getElementById('selectedFoods');
+            const emptyState = document.getElementById('emptyState');
+            const totalElement = document.getElementById('totalCalories');
+
+            if (selectedItems.length === 0) {
+                emptyState.style.display = 'block';
+                selectedContainer.querySelectorAll('.selected-item').forEach(el => el.remove());
+            } else {
+                emptyState.style.display = 'none';
+                // Clear only the food items, keep the empty state div hidden
+                selectedContainer.querySelectorAll('.selected-item').forEach(el => el.remove());
+                
+                selectedItems.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "selected-item flex items-center justify-between p-3 rounded-xl bg-white border-2 border-pink-50 shadow-sm animate-in fade-in slide-in-from-right-4 duration-300";
+                    div.innerHTML = `
+                        <div class="flex items-center">
+                            <span class="mr-2">${item.icon}</span>
+                            <span class="font-medium text-slate-600 text-sm">${item.name}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-pink-500 font-bold text-sm mr-3">${item.calo} kcal</span>
+                            <button onclick="removeFromList(${item.uniqueId})" class="text-slate-300 hover:text-red-400 transition-colors">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </div>
+                    `;
+                    selectedContainer.appendChild(div);
+                });
+            }
+
+            const total = selectedItems.reduce((sum, item) => sum + item.calo, 0);
+            
+            // Animate number change
+            animateValue(totalElement, parseInt(totalElement.innerText), total, 500);
+        }
+
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        document.getElementById('foodSearch').addEventListener('input', (e) => {
+            renderFoodList(e.target.value);
+        });
+
+        document.getElementById('clearAll').addEventListener('click', () => {
+            if(selectedItems.length > 0) {
+                if(confirm("Bé có chắc muốn xóa hết nhật ký hôm nay không? 🥺")) {
+                    selectedItems = [];
+                    updateUI();
+                }
+            }
+        });
+
+        // Initial render
+        renderFoodList();
+    </script>
+</body>
+</html>
